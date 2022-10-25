@@ -6,12 +6,19 @@ import java.sql.*;
 import java.util.Map;
 
 public class UserDao {
+
+    // Connection 분리
+    private Connection makeConnection() throws SQLException {
+        Map<String, String> env = System.getenv();
+        Connection conn = DriverManager.getConnection(env.get("DB_HOST"),
+                env.get("DB_USER"), env.get("DB_PASSWORD"));
+        return conn;
+    }
+
     public void add(User user) {
         Map<String, String> env = System.getenv();
         try {
-            Connection conn = DriverManager.getConnection(env.get("DB_HOST"),
-                    env.get("DB_USER"), env.get("DB_PASSWORD"));
-
+            Connection conn = makeConnection();
             PreparedStatement pstmt = conn.prepareStatement("INSERT INTO users(id, name, password) VALUES (?, ?, ?);");
             pstmt.setString(1, user.getId());
             pstmt.setString(2, user.getName());
@@ -30,8 +37,7 @@ public class UserDao {
         Map<String, String> env = System.getenv();
         Connection conn;
         try {
-            conn = DriverManager.getConnection(env.get("DB_HOST"),
-                    env.get("DB_USER"), env.get("DB_PASSWORD"));
+            conn = makeConnection();
             PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
             pstmt.setString(1, id);
 
