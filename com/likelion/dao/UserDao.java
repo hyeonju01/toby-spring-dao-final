@@ -23,10 +23,7 @@ public class UserDao {
         Map<String, String> env = System.getenv();
         try {
             Connection conn = connectionMaker.makeConnection();
-            PreparedStatement pstmt = conn.prepareStatement("INSERT INTO users(id, name, password) VALUES (?, ?, ?);");
-            pstmt.setString(1, user.getId());
-            pstmt.setString(2, user.getName());
-            pstmt.setString(3, user.getPassword());
+            PreparedStatement pstmt = new AddStrategy(user).makePreparedStatement(conn);
 
             pstmt.executeUpdate();
 
@@ -112,7 +109,7 @@ public class UserDao {
 
         try {
             conn = connectionMaker.makeConnection();
-            pstmt = conn.prepareStatement("DELETE FROM users");
+            pstmt = new DeleteAllStrategy().makePreparedStatement(conn);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             throw e;
