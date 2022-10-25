@@ -3,12 +3,14 @@ package com.likelion.dao;
 import com.likelion.domain.User;
 import org.springframework.dao.EmptyResultDataAccessException;
 
+import javax.sql.DataSource;
 import java.sql.*;
 import java.util.Map;
 
 public class UserDao {
 
     // ConnectionMaker class로 분리
+    private DataSource dataSource;
     private ConnectionMaker connectionMaker;
 
     public UserDao() {
@@ -22,7 +24,7 @@ public class UserDao {
     public void add(User user) throws ClassNotFoundException{
         Map<String, String> env = System.getenv();
         try {
-            Connection conn = connectionMaker.makeConnection();
+            Connection conn = dataSource.getConnection();
             PreparedStatement pstmt = new AddStrategy(user).makePreparedStatement(conn);
 
             pstmt.executeUpdate();
@@ -38,7 +40,7 @@ public class UserDao {
         Map<String, String> env = System.getenv();
         Connection conn;
         try {
-            conn = connectionMaker.makeConnection();
+            conn = dataSource.getConnection();
             PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
             pstmt.setString(1, id);
 
@@ -70,7 +72,7 @@ public class UserDao {
         ResultSet rs = null;
 
         try {
-            conn = connectionMaker.makeConnection();
+            conn = dataSource.getConnection();
             pstmt = conn.prepareStatement("SELECT count(*) FROM users");
             rs = pstmt.executeQuery();
             rs.next();
@@ -108,7 +110,7 @@ public class UserDao {
         PreparedStatement pstmt = null;
 
         try {
-            conn = connectionMaker.makeConnection();
+            conn = dataSource.getConnection();
             pstmt = new DeleteAllStrategy().makePreparedStatement(conn);
             pstmt.executeUpdate();
         } catch (SQLException e) {
