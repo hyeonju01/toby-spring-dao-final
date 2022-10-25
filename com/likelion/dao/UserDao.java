@@ -7,18 +7,21 @@ import java.util.Map;
 
 public class UserDao {
 
-    // Connection 분리
-    private Connection makeConnection() throws SQLException {
-        Map<String, String> env = System.getenv();
-        Connection conn = DriverManager.getConnection(env.get("DB_HOST"),
-                env.get("DB_USER"), env.get("DB_PASSWORD"));
-        return conn;
+    // ConnectionMaker class로 분리
+    private ConnectionMaker connectionMaker;
+
+    public UserDao() {
+        this.connectionMaker = new AwsConnectionMaker();
     }
 
-    public void add(User user) {
+    public UserDao(ConnectionMaker connectionMaker) {
+        this.connectionMaker = connectionMaker;
+    }
+
+    public void add(User user) throws ClassNotFoundException{
         Map<String, String> env = System.getenv();
         try {
-            Connection conn = makeConnection();
+            Connection conn = connectionMaker.makeConnection();
             PreparedStatement pstmt = conn.prepareStatement("INSERT INTO users(id, name, password) VALUES (?, ?, ?);");
             pstmt.setString(1, user.getId());
             pstmt.setString(2, user.getName());
@@ -33,11 +36,11 @@ public class UserDao {
         }
     }
 
-    public User findById(String id) {
+    public User findById(String id) throws ClassNotFoundException{
         Map<String, String> env = System.getenv();
         Connection conn;
         try {
-            conn = makeConnection();
+            conn = connectionMaker.makeConnection();
             PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM users WHERE id = ?");
             pstmt.setString(1, id);
 
@@ -56,7 +59,7 @@ public class UserDao {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException{
         UserDao userDao = new UserDao();
         User user = userDao.findById("6");
         System.out.println(user.getName());
